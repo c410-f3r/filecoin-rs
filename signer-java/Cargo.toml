@@ -1,0 +1,15 @@
+[package]
+name = "signer-java"
+version = "0.1.0"
+authors = ["rllola <rllola80@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+jni = "0.16.0"
+filecoin-signer = { path = "../signer" }
+
+[lib]
+name = "signer"
+crate-type = ["cdylib"]

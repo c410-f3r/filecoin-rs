@@ -3,7 +3,8 @@
 members = [
     "service",
     "signer",
-    "signer-wasm"
+    "signer-wasm",
+    "signer-java"
 ]
 
 [profile.release]
