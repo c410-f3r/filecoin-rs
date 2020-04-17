@@ -5,9 +5,10 @@ authors = ["Zondax <info@zondax.ch>"]
 edition = "2018"
 license = "Apache-2.0"
 repository = "https://github.com/Zondax/filecoin-rs"
-description =""
+description = ""
 
 [dependencies]
+ledger = "0.2"
 num = { version = "0.2.1", features = ["serde"] }
 thiserror = "1.0.10"
 

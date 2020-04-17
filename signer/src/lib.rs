@@ -1,5 +1,5 @@
 use crate::api::{
-    MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI, UnsignedMessageAPI,
+    MessageTx, MessageTxAPI, MessageTxNetwork, UnsignedMessageAPI,
 };
 use crate::error::SignerError;
 use crate::utils::from_hex_string;
@@ -13,8 +13,9 @@ use bip39::{Language, MnemonicType, Seed};
 use secp256k1::util::{
     COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
 };
-use secp256k1::{recover, sign, verify, Message, RecoveryId};
+use secp256k1::{recover, verify, Message, RecoveryId};
 
+pub mod backend;
 pub mod api;
 mod bip44;
 pub mod error;
@@ -222,69 +223,6 @@ pub fn transaction_parse(
     let parsed_message = MessageTxAPI::try_from(message_tx_with_network)?;
 
     Ok(parsed_message)
-}
-
-/// Sign a transaction and return a raw signature (RSV format).
-///
-/// # Arguments
-///
-/// * `unsigned_message_api` - an unsigned filecoin message
-/// * `private_key` - a `PrivateKey`
-///
-pub fn transaction_sign_raw(
-    unsigned_message_api: &UnsignedMessageAPI,
-    private_key: &PrivateKey,
-) -> Result<Signature, SignerError> {
-    let message = forest_message::UnsignedMessage::try_from(unsigned_message_api)?;
-    let message_cbor = CborBuffer(to_vec(&message)?);
-
-    let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
-
-    let cid_hashed = utils::get_digest(&message_cbor.0);
-
-    let message_digest = Message::parse_slice(&cid_hashed)?;
-
-    let (signature_rs, recovery_id) = sign(&message_digest, &secret_key);
-
-    let mut signature = Signature { 0: [0; 65] };
-    signature.0[..64].copy_from_slice(&signature_rs.serialize()[..]);
-    signature.0[64] = recovery_id.serialize();
-
-    Ok(signature)
-}
-
-/// Sign a transaction and return a signed message (message + signature).
-///
-/// # Arguments
-///
-/// * `unsigned_message_api` - an unsigned filecoin message
-/// * `private_key` - a `PrivateKey`
-///
-pub fn transaction_sign(
-    unsigned_message: &UnsignedMessageAPI,
-    private_key: &PrivateKey,
-) -> Result<SignedMessageAPI, SignerError> {
-    let message = forest_message::UnsignedMessage::try_from(unsigned_message)?;
-    let message_cbor = CborBuffer(to_vec(&message)?);
-
-    let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
-
-    let cid_hashed = utils::get_digest(&message_cbor.0);
-
-    let message_digest = Message::parse_slice(&cid_hashed)?;
-
-    let (signature_rs, recovery_id) = sign(&message_digest, &secret_key);
-
-    let mut signature = Signature { 0: [0; 65] };
-    signature.0[..64].copy_from_slice(&signature_rs.serialize()[..]);
-    signature.0[64] = recovery_id.serialize();
-
-    let signed_message = SignedMessageAPI {
-        message: unsigned_message.to_owned(),
-        signature: SignatureAPI::from(&signature),
-    };
-
-    Ok(signed_message)
 }
 
 /// Verify a signature. Return a boolean.

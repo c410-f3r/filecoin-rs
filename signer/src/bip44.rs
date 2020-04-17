@@ -1,11 +1,14 @@
-use secp256k1::util::{COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE};
-use secp256k1::{PublicKey, SecretKey};
-
+use secp256k1::{
+    util::{COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE},
+    PublicKey, SecretKey
+};
 use crate::error::SignerError;
 use hmac::{Hmac, Mac};
 use sha2::Sha512;
-use std::convert::TryFrom;
-use std::fmt;
+use core::{
+    convert::TryFrom,
+    fmt
+};
 use zeroize::Zeroize;
 
 const HARDENED_BIT: u32 = 1 << 31;
